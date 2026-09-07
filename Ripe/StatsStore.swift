@@ -32,6 +32,8 @@ final class StatsStore {
     private func dayKey(for date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
         formatter.timeZone = calendar.timeZone
         return formatter.string(from: date)
     }

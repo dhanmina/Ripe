@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct MenuBarView: View {
@@ -26,6 +27,12 @@ struct MenuBarView: View {
             Divider()
 
             StatsView(engine: engine)
+
+            Divider()
+
+            Button("Quit Ripe") {
+                NSApplication.shared.terminate(nil)
+            }
         }
         .padding()
         .frame(width: 220)
