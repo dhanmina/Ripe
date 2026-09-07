@@ -48,7 +48,9 @@ components:
 
 Ripe has no visual world of its own — that is the decision. It borrows macOS's own menu-bar-extra grammar wholesale: the same compact glass popover, the same circular countdown ring language as Screen Time and Focus, the same SF Symbols vocabulary and system materials that Control Center's own modules use. The interface is built to disappear into the OS rather than announce a brand. There is no illustrated identity, no custom iconography, no emoji standing in for icons, and no invented color story beyond mapping the three Pomodoro phases onto semantic system colors (Orange for focus, Mint for short break, Indigo for long break) the way Apple's own Focus modes assign a hue per mode.
 
-Two things this system explicitly rejects: any decorative material (gradients, drop shadows, glass as ornament) beyond what `MenuBarExtra`'s own `.window` style already renders for free, and any content that isn't real — no placeholder copy, no fabricated stats, no icon that isn't a genuine SF Symbol carrying its literal meaning (a timer glyph for focus, a moon for rest, a checkmark seal for a completed session).
+Two things this system explicitly rejects: any decorative material (gradients, drop shadows, glass as ornament) beyond what `MenuBarExtra`'s own `.window` style already renders for free, and any content that isn't real — no placeholder copy, no fabricated stats, no icon that isn't a genuine SF Symbol carrying its literal meaning (a timer glyph for focus, a moon for rest, a checkmark seal for a completed session) — with one deliberate, named exception below.
+
+**The One Exception: The Ripening Tomato.** The app is named Ripe; the Focus-phase header icon is the one place that name gets to mean something visually. A custom-drawn tomato (`TomatoIcon`) replaces the SF Symbol in the popover header during `.work` phases only, its fill color interpolating from unripe green to tomato red as the session's real elapsed time progresses — not a mascot, not a streak, a progress indicator wearing the app's own name. The actual `MenuBarExtra` status-item icon keeps the plain SF Symbol always — that slot is a stricter AppKit-managed rendering context than a normal popover view, not worth risking on a custom shape. Short and long breaks keep their SF Symbols everywhere.
 
 **Key Characteristics:**
 - Native chrome only — the system-provided popover material is the surface; nothing is re-drawn on top of it.
@@ -95,7 +97,7 @@ Every color is a semantic system or platform-standard hue, never a custom hex ba
 
 ## Layout
 
-Single fixed-width popover, 240pt wide, content padded 16pt on all sides, sections separated by 16pt vertical spacing (header → ring → controls → divider → stats). There is no responsive behavior to design for — a `MenuBarExtra` popover is a single fixed surface, not a page that reflows. Controls sit in one centered horizontal row, 20pt apart. The 7-day stat row spans the full content width with `maxWidth: .infinity` per-day columns so seven days always distribute evenly regardless of digit width.
+Single fixed-width popover, 240pt wide, content padded 16pt on all sides, sections separated by 16pt vertical spacing (header → ring → controls on the timer screen). There is no responsive behavior to design for — a `MenuBarExtra` popover is a single fixed surface, not a page that reflows. Controls sit in one centered horizontal row, 20pt apart. The 7-day stat row (on its own Stats screen, not the timer screen) spans the full content width with `maxWidth: .infinity` per-day columns so seven days always distribute evenly regardless of digit width.
 
 ## Elevation & Depth
 
@@ -110,6 +112,11 @@ Two shapes, used consistently: **circle** (the countdown ring and every control 
 
 ## Components
 
+### Tomato Icon
+- **Shape:** a flat ellipse body plus a small rounded-capsule calyx notch at top — recognizable as a tomato at menu-bar scale (16×16pt) without literal leaf detail, which wouldn't survive that size.
+- **Color:** linear RGB interpolation from unripe olive-green to tomato-red, driven by progress across the *whole cycle* of sessions before a long break (completed sessions in the cycle, plus the in-flight session's own fraction, divided by sessions-before-long-break) — not per-session. Finishing session 1 of 4 shows a quarter-ripe tomato, not a fully red one; full ripeness lands exactly at the session right before a long break.
+- **Scope:** replaces the phase SF Symbol in exactly one place (the popover header) and only during `.work` phases. The `MenuBarExtra` status-item icon always stays a plain SF Symbol — that AppKit-managed slot is stricter than a normal SwiftUI view and isn't worth risking on a custom shape. Short/long breaks keep `cup.and.saucer.fill` / `moon.zzz.fill` everywhere.
+
 ### Countdown Ring
 - **Shape:** circle, 140×140pt, 8pt stroke width, round line cap.
 - **Track:** `.quaternary` hierarchical fill, full circle, static.
@@ -122,14 +129,20 @@ Two shapes, used consistently: **circle** (the countdown ring and every control 
 - **Secondary (Reset, Skip):** `.controlSize(.large)`, default system tint, icon-only (`gobackward`, `forward.end.fill`) with an `.accessibilityLabel` since no visible text names the action.
 - **Quit:** `.plain` button style, `power` SF Symbol, secondary foreground color, positioned top-trailing in the header — the one control that intentionally recedes, since it's a rare, non-primary action. Tapping it swaps the popover to an in-place "Quit Ripe?" confirmation styled to read as a native alert — centered layout, a large tinted SF Symbol, bold title, secondary message, centered Cancel/Quit buttons — rather than a real system `.alert` or `.confirmationDialog`. A `MenuBarExtra(.window)` popover closes itself the instant any separate system window takes key focus, so an actual dialog silently closes the popover out from under itself; this content swap gets the alert's look without spawning a second window.
 
+### Stats Summary Row
+- **Content:** three numbers, each answering a genuinely different question — Today (right now), This Week (sum of the 7-day data), All-Time (every session ever, since `StatsStore` persists daily counts indefinitely and never prunes them — the sum was free, just never surfaced before).
+- **Layout:** three equal-width columns, `.title3.weight(.semibold)` number over a `.caption2`/`.secondary` label, no icons — three side-by-side numbers with clear text labels don't need three icons competing for attention, unlike the single "Today" count that used to stand alone.
+- **Named Rule: The No Fabricated Time Rule.** Ripe never shows a "time focused" stat computed by multiplying a historical session count by the *current* duration setting — past sessions may have run under a different duration, and presenting that as real elapsed time would violate the "real data only" principle. Session counts are the only metric shown because they're the only one that stays accurate regardless of later setting changes.
+- **Deliberately removed:** a "ripened today" count (`today ÷ sessionsBeforeLongBreak`) was tried and cut — changing the sessions-before-long-break setting mid-day silently changed the same completed sessions' derived count, which is a correctness smell, not a real stat. The ripening concept stays exactly where it started: a visual effect on the header's tomato icon, never a number.
+
 ### Stats Bar Chart
 - **Shape:** capsule bars, 6pt wide, height scaled 3–24pt proportional to that day's count against the week's max.
 - **Fill:** `Color.accentColor` for any day with ≥1 completed session, `Color.primary.opacity(0.12)` baseline for zero — real data, never a placeholder sparkline.
 - **Label:** single-letter weekday caption beneath each bar (`EEEEE` date format, locale-pinned).
 
-### "Today" Indicator
-- **Icon:** `checkmark.seal.fill`, tinted Complete Green — a semantic system icon for "done," never an emoji.
-- **Layout:** `Label` pairing the icon with the numeric count, left-aligned above the bar chart.
+### Stats Screen
+- **Trigger:** a `chart.bar` icon button in the popover header, `.plain` style, secondary color, positioned between the phase label and the Settings gear.
+- **Surface:** the same second-screen-of-the-popover pattern as Settings — `showingStats` state, `chevron.backward` back button, a "Stats" title. The timer screen no longer shows stats inline; today's count and the 7-day chart moved here entirely rather than being duplicated.
 
 ### Settings Screen
 - **Trigger:** a `gearshape` icon button in the popover header, `.plain` style, secondary color, positioned before Quit.
@@ -143,7 +156,7 @@ Two shapes, used consistently: **circle** (the countdown ring and every control 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** use only real SF Symbols for every icon — the app ships zero emoji and zero custom-drawn icons.
+- **Do** use only real SF Symbols for every icon, with exactly one named exception: the ripening tomato (`TomatoIcon`) during Focus phases — see Overview.
 - **Do** let every color reference a semantic system value (`Color.orange`, `.accentColor`, `.quaternary`) so appearance mode and accessibility settings are inherited for free.
 - **Do** keep the popover's background exactly what `MenuBarExtra(.window)` renders natively — no custom material layered on top.
 - **Do** give every icon-only button an `.accessibilityLabel` naming its action.
@@ -152,7 +165,7 @@ Two shapes, used consistently: **circle** (the countdown ring and every control 
 ### Don't:
 - **Don't** introduce a fourth phase color, a gradient text treatment, or any hue that isn't one of the four semantic colors this file names.
 - **Don't** add a card, panel, or bordered container inside the popover — the popover itself is the only "card" this surface gets.
-- **Don't** use emoji, decorative Unicode glyphs, or stock illustration anywhere in this app.
+- **Don't** use emoji, decorative Unicode glyphs, or stock illustration anywhere in this app. `TomatoIcon` is hand-coded geometry in the app's own color system, not stock art — it doesn't reopen this door for anything else.
 - **Don't** open a second window, a second popover, or any Dock-visible surface — there is exactly one popover, with exactly one back-and-forth screen swap inside it.
 - **Don't** present a system `.alert` or `.confirmationDialog` from the popover — either one opens as its own window and focus-steals the `MenuBarExtra(.window)` popover into closing itself. Any confirmation is a content swap inside the popover instead.
 - **Don't** animate a transition between the popover's screens when their content heights differ — the popover's window frame resizes to match, and animating that resize flashes the window's raw backing. Screen swaps are instant.

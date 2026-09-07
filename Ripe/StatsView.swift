@@ -14,14 +14,16 @@ struct StatsView: View {
         max(engine.statsLast7Days.map(\.count).max() ?? 0, 1)
     }
 
+    private var weekTotal: Int {
+        engine.statsLast7Days.map(\.count).reduce(0, +)
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Label {
-                Text("\(engine.statsToday) today")
-                    .font(.subheadline.weight(.medium))
-            } icon: {
-                Image(systemName: "checkmark.seal.fill")
-                    .foregroundStyle(.green)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                statColumn(value: engine.statsToday, label: "Today")
+                statColumn(value: weekTotal, label: "This Week")
+                statColumn(value: engine.statsAllTime, label: "All-Time")
             }
 
             HStack(alignment: .bottom, spacing: 8) {
@@ -39,6 +41,18 @@ struct StatsView: View {
             }
             .frame(height: 36, alignment: .bottom)
         }
+    }
+
+    private func statColumn(value: Int, label: String) -> some View {
+        VStack(spacing: 2) {
+            Text("\(value)")
+                .font(.title3.weight(.semibold))
+                .monospacedDigit()
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private func barHeight(for count: Int) -> CGFloat {

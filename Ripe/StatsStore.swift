@@ -19,6 +19,10 @@ final class StatsStore {
         loadCounts()[dayKey(for: Date())] ?? 0
     }
 
+    var allTime: Int {
+        loadCounts().values.reduce(0, +)
+    }
+
     var last7Days: [(date: Date, count: Int)] {
         let counts = loadCounts()
         return (0..<7).reversed().compactMap { offset -> (date: Date, count: Int)? in

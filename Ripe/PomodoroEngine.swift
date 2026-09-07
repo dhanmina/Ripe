@@ -15,6 +15,7 @@ final class PomodoroEngine: ObservableObject {
     @Published private(set) var sessionsCompleted: Int = 0
     @Published private(set) var statsToday: Int
     @Published private(set) var statsLast7Days: [(date: Date, count: Int)]
+    @Published private(set) var statsAllTime: Int
 
     private var endDate: Date?
     private var timer: Timer?
@@ -34,6 +35,7 @@ final class PomodoroEngine: ObservableObject {
         self.notificationManager = notificationManager ?? NotificationManager(settingsStore: settingsStore)
         self.statsToday = statsStore.today
         self.statsLast7Days = statsStore.last7Days
+        self.statsAllTime = statsStore.allTime
         self.phaseDuration = settingsStore.duration(for: .work)
         self.remaining = settingsStore.duration(for: .work)
 
@@ -115,6 +117,7 @@ final class PomodoroEngine: ObservableObject {
             sessionsCompleted += 1
             statsToday = statsStore.today
             statsLast7Days = statsStore.last7Days
+            statsAllTime = statsStore.allTime
             phase = sessionsCompleted % settingsStore.sessionsBeforeLongBreak == 0 ? .longBreak : .shortBreak
         } else {
             phase = .work

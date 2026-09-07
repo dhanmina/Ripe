@@ -7,10 +7,31 @@ struct MenuBarView: View {
     @ObservedObject var notificationManager: NotificationManager
     @StateObject private var loginItemManager = LoginItemManager()
     @State private var showingSettings = false
+    @State private var showingStats = false
     @State private var showingQuitConfirmation = false
 
     private var progress: CGFloat {
         CGFloat(engine.remaining / engine.phaseDuration)
+    }
+
+    @ViewBuilder
+    private var phaseIcon: some View {
+        if engine.phase == .work {
+            TomatoIcon(ripeness: cycleRipeness).frame(width: 18, height: 18)
+        } else {
+            Image(systemName: engine.phase.symbolName)
+        }
+    }
+
+    /// Ripens across the whole cycle of sessions before a long break, not
+    /// just the current session — e.g. with 4 sessions before a long break,
+    /// finishing session 1 of 4 gets the tomato a quarter of the way red,
+    /// not fully ripe.
+    private var cycleRipeness: Double {
+        let totalSessions = max(settingsStore.sessionsBeforeLongBreak, 1)
+        let completedInCycle = Double(engine.sessionsCompleted % settingsStore.sessionsBeforeLongBreak)
+        let currentSessionProgress = 1 - Double(progress)
+        return min((completedInCycle + currentSessionProgress) / Double(totalSessions), 1)
     }
 
     var body: some View {
@@ -19,6 +40,8 @@ struct MenuBarView: View {
                 quitConfirmContent
             } else if showingSettings {
                 settingsContent
+            } else if showingStats {
+                statsContent
             } else {
                 timerContent
             }
@@ -51,10 +74,37 @@ struct MenuBarView: View {
             .frame(width: 140, height: 140)
 
             controls
+        }
+    }
 
-            Divider()
+    private var statsContent: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            statsHeader
 
             StatsView(engine: engine)
+
+            Spacer(minLength: 0)
+        }
+        .frame(minHeight: 140, alignment: .top)
+    }
+
+    private var statsHeader: some View {
+        HStack {
+            Button {
+                showingStats = false
+            } label: {
+                Image(systemName: "chevron.backward")
+                    .padding(4)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .accessibilityLabel("Back")
+
+            Text("Stats")
+                .font(.headline)
+
+            Spacer()
         }
     }
 
@@ -116,6 +166,8 @@ struct MenuBarView: View {
                 showingSettings = false
             } label: {
                 Image(systemName: "chevron.backward")
+                    .padding(4)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
@@ -130,16 +182,32 @@ struct MenuBarView: View {
 
     private var header: some View {
         HStack {
-            Label(engine.phase.label, systemImage: engine.phase.symbolName)
-                .font(.headline)
-                .foregroundStyle(engine.phase.tint)
+            HStack(spacing: 6) {
+                phaseIcon
+                Text(engine.phase.label)
+                    .foregroundStyle(engine.phase.tint)
+            }
+            .font(.headline)
 
             Spacer()
+
+            Button {
+                showingStats = true
+            } label: {
+                Image(systemName: "chart.bar")
+                    .padding(4)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .accessibilityLabel("Stats")
 
             Button {
                 showingSettings = true
             } label: {
                 Image(systemName: "gearshape")
+                    .padding(4)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
@@ -149,6 +217,8 @@ struct MenuBarView: View {
                 showingQuitConfirmation = true
             } label: {
                 Image(systemName: "power")
+                    .padding(4)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
