@@ -8,7 +8,12 @@ struct RipeApp: App {
         MenuBarExtra {
             MenuBarView(engine: engine)
         } label: {
-            Label(menuBarTitle, systemImage: menuBarSymbol)
+            Label {
+                Text(menuBarTitle)
+                    .monospacedDigit()
+            } icon: {
+                Image(systemName: engine.phase.symbolName)
+            }
         }
         .menuBarExtraStyle(.window)
     }
@@ -16,12 +21,5 @@ struct RipeApp: App {
     private var menuBarTitle: String {
         let total = max(0, Int(engine.remaining.rounded()))
         return String(format: "%02d:%02d", total / 60, total % 60)
-    }
-
-    private var menuBarSymbol: String {
-        switch engine.phase {
-        case .work: return "leaf.fill"
-        case .shortBreak, .longBreak: return "cup.and.saucer.fill"
-        }
     }
 }
