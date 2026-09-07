@@ -30,7 +30,7 @@ Used while the Mac is otherwise busy with other apps — the menu bar item and i
 - Notification (system banner) + sound fires on every phase completion, including while the app is frontmost (popover open).
 - Stats: count of completed focus sessions today, plus a 7-day view, persisted in `UserDefaults` across launches and locale/region changes.
 - macOS-only Xcode project (`SUPPORTED_PLATFORMS = macosx`); no unit test target exists by design — verification is `xcodebuild build` plus manual click-through.
-- Two surfaces: the `MenuBarExtra` popover (the timer itself) and a standard `Settings` window for preferences, opened via a gear button in the popover header. Every new preference goes into Settings, never bolted onto the popover — no third surface beyond these two.
+- One surface, one popover: the `MenuBarExtra` popover shows either the timer or a settings screen, swapped in place via a gear button (into settings) and a back button (out of it) — never a second window. Every new preference goes into that settings screen, never bolted onto the timer view.
 
 ## Brand Commitments
 
@@ -44,7 +44,7 @@ No existing screenshots, user research, or usage data — this is a from-scratch
 
 ## Product Principles
 
-1. The menu bar item and its popover are the timer — running the app day to day never requires more than that surface. Preferences are the one deliberate exception, kept in a single dedicated Settings window rather than spread across the popover.
+1. The menu bar item and its one popover are the entire product — no feature opens a second window. Preferences live behind a back-and-forth screen swap inside that same popover.
 2. Never demand attention beyond what a glance affords; this is a background companion to real work, not the main event.
 3. Correctness under sleep/wake and across midnight/locale changes matters more than feature breadth.
 4. Single-user tool: optimize for the developer's own daily use, not onboarding or unfamiliar users.

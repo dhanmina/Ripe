@@ -131,10 +131,11 @@ Two shapes, used consistently: **circle** (the countdown ring and every control 
 - **Icon:** `checkmark.seal.fill`, tinted Complete Green — a semantic system icon for "done," never an emoji.
 - **Layout:** `Label` pairing the icon with the numeric count, left-aligned above the bar chart.
 
-### Settings Window
-- **Trigger:** a `gearshape` icon button in the popover header, `.plain` style, secondary color, positioned before Quit — same visual weight as Quit, since both are rare non-primary actions.
-- **Surface:** the platform's own `Settings` scene (`Form`-based), opened via `openSettings()`. Not a popover — a real, standard preferences window, the one exception to the single-surface rule below.
-- **Content:** native `Form` with `.switch`-style toggles and plain text labels, matching System Settings' own preference-row convention. Every setting the app grows lives here, never bolted onto the popover.
+### Settings Screen
+- **Trigger:** a `gearshape` icon button in the popover header, `.plain` style, secondary color, positioned before Quit.
+- **Surface:** not a second window — a second screen of the same popover. `MenuBarView` holds `showingSettings` state and swaps its content between the timer view and the settings view in place, so the popover never spawns another window and the menu bar icon never needs a second click target.
+- **Navigation:** a `chevron.backward` back button plus a "Settings" title replaces the timer header while settings are shown; tapping back returns to the timer view. A short crossfade (`easeInOut`, 0.2s) softens the swap.
+- **Content:** plain `.switch`-style toggles and text labels, no `Form` chrome (no grouped-list background) since it's sharing the popover's own padding and width, not owning a window of its own.
 
 ## Do's and Don'ts
 
@@ -143,10 +144,10 @@ Two shapes, used consistently: **circle** (the countdown ring and every control 
 - **Do** let every color reference a semantic system value (`Color.orange`, `.accentColor`, `.quaternary`) so appearance mode and accessibility settings are inherited for free.
 - **Do** keep the popover's background exactly what `MenuBarExtra(.window)` renders natively — no custom material layered on top.
 - **Do** give every icon-only button an `.accessibilityLabel` naming its action.
-- **Do** put every preference in the Settings window's `Form`, never as a new row bolted onto the popover — the popover stays the timer surface, Settings stays the preferences surface.
+- **Do** put every preference behind the gear icon's settings screen, never as a new row bolted onto the timer view.
 
 ### Don't:
 - **Don't** introduce a fourth phase color, a gradient text treatment, or any hue that isn't one of the four semantic colors this file names.
 - **Don't** add a card, panel, or bordered container inside the popover — the popover itself is the only "card" this surface gets.
 - **Don't** use emoji, decorative Unicode glyphs, or stock illustration anywhere in this app.
-- **Don't** add a Dock-visible surface, a second popover, or any window beyond the popover and the one Settings window.
+- **Don't** open a second window, a second popover, or any Dock-visible surface — there is exactly one popover, with exactly one back-and-forth screen swap inside it.

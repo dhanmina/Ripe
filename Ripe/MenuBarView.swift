@@ -3,13 +3,27 @@ import SwiftUI
 
 struct MenuBarView: View {
     @ObservedObject var engine: PomodoroEngine
-    @Environment(\.openSettings) private var openSettings
+    @StateObject private var loginItemManager = LoginItemManager()
+    @State private var showingSettings = false
 
     private var progress: CGFloat {
         CGFloat(engine.remaining / engine.phase.duration)
     }
 
     var body: some View {
+        Group {
+            if showingSettings {
+                settingsContent
+            } else {
+                timerContent
+            }
+        }
+        .padding(16)
+        .frame(width: 240)
+        .animation(.easeInOut(duration: 0.2), value: showingSettings)
+    }
+
+    private var timerContent: some View {
         VStack(spacing: 16) {
             header
 
@@ -38,8 +52,35 @@ struct MenuBarView: View {
 
             StatsView(engine: engine)
         }
-        .padding(16)
-        .frame(width: 240)
+    }
+
+    private var settingsContent: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            settingsHeader
+
+            SettingsView(loginItemManager: loginItemManager)
+
+            Spacer(minLength: 0)
+        }
+        .frame(minHeight: 140)
+    }
+
+    private var settingsHeader: some View {
+        HStack {
+            Button {
+                showingSettings = false
+            } label: {
+                Image(systemName: "chevron.backward")
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .accessibilityLabel("Back")
+
+            Text("Settings")
+                .font(.headline)
+
+            Spacer()
+        }
     }
 
     private var header: some View {
@@ -51,7 +92,7 @@ struct MenuBarView: View {
             Spacer()
 
             Button {
-                openSettings()
+                showingSettings = true
             } label: {
                 Image(systemName: "gearshape")
             }
