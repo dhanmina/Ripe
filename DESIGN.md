@@ -131,9 +131,10 @@ Two shapes, used consistently: **circle** (the countdown ring and every control 
 - **Icon:** `checkmark.seal.fill`, tinted Complete Green — a semantic system icon for "done," never an emoji.
 - **Layout:** `Label` pairing the icon with the numeric count, left-aligned above the bar chart.
 
-### Settings Toggle
-- **Style:** native `.switch` toggle style, plain text label (subheadline), no icon — matches how System Settings itself labels a binary preference.
-- **Placement:** below the stats section, separated by the same `Divider()` rhythm used elsewhere in the popover, never inside its own container.
+### Settings Window
+- **Trigger:** a `gearshape` icon button in the popover header, `.plain` style, secondary color, positioned before Quit — same visual weight as Quit, since both are rare non-primary actions.
+- **Surface:** the platform's own `Settings` scene (`Form`-based), opened via `openSettings()`. Not a popover — a real, standard preferences window, the one exception to the single-surface rule below.
+- **Content:** native `Form` with `.switch`-style toggles and plain text labels, matching System Settings' own preference-row convention. Every setting the app grows lives here, never bolted onto the popover.
 
 ## Do's and Don'ts
 
@@ -142,9 +143,10 @@ Two shapes, used consistently: **circle** (the countdown ring and every control 
 - **Do** let every color reference a semantic system value (`Color.orange`, `.accentColor`, `.quaternary`) so appearance mode and accessibility settings are inherited for free.
 - **Do** keep the popover's background exactly what `MenuBarExtra(.window)` renders natively — no custom material layered on top.
 - **Do** give every icon-only button an `.accessibilityLabel` naming its action.
+- **Do** put every preference in the Settings window's `Form`, never as a new row bolted onto the popover — the popover stays the timer surface, Settings stays the preferences surface.
 
 ### Don't:
 - **Don't** introduce a fourth phase color, a gradient text treatment, or any hue that isn't one of the four semantic colors this file names.
 - **Don't** add a card, panel, or bordered container inside the popover — the popover itself is the only "card" this surface gets.
 - **Don't** use emoji, decorative Unicode glyphs, or stock illustration anywhere in this app.
-- **Don't** add a second window, settings screen, or Dock-visible surface — the popover is the entire product.
+- **Don't** add a Dock-visible surface, a second popover, or any window beyond the popover and the one Settings window.

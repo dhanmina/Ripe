@@ -3,7 +3,7 @@ import SwiftUI
 
 struct MenuBarView: View {
     @ObservedObject var engine: PomodoroEngine
-    @StateObject private var loginItemManager = LoginItemManager()
+    @Environment(\.openSettings) private var openSettings
 
     private var progress: CGFloat {
         CGFloat(engine.remaining / engine.phase.duration)
@@ -37,17 +37,6 @@ struct MenuBarView: View {
             Divider()
 
             StatsView(engine: engine)
-
-            Divider()
-
-            Toggle(isOn: Binding(
-                get: { loginItemManager.isEnabled },
-                set: { loginItemManager.setEnabled($0) }
-            )) {
-                Text("Launch at Login")
-                    .font(.subheadline)
-            }
-            .toggleStyle(.switch)
         }
         .padding(16)
         .frame(width: 240)
@@ -60,6 +49,15 @@ struct MenuBarView: View {
                 .foregroundStyle(engine.phase.tint)
 
             Spacer()
+
+            Button {
+                openSettings()
+            } label: {
+                Image(systemName: "gearshape")
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .accessibilityLabel("Settings")
 
             Button {
                 NSApplication.shared.terminate(nil)

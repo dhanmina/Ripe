@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct RipeApp: App {
     @StateObject private var engine = PomodoroEngine()
+    @StateObject private var loginItemManager = LoginItemManager()
 
     var body: some Scene {
         MenuBarExtra {
@@ -16,6 +17,10 @@ struct RipeApp: App {
             }
         }
         .menuBarExtraStyle(.window)
+
+        Settings {
+            SettingsView(loginItemManager: loginItemManager)
+        }
     }
 
     private var menuBarTitle: String {
