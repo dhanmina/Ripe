@@ -69,7 +69,10 @@ final class PomodoroEngine: ObservableObject {
         let secondsLeft = endDate.timeIntervalSinceNow
         if secondsLeft <= 0 {
             completeCurrentPhase()
-            self.endDate = Date().addingTimeInterval(remaining)
+            timer?.invalidate()
+            timer = nil
+            runState = .idle
+            self.endDate = nil
         } else {
             remaining = secondsLeft
         }
