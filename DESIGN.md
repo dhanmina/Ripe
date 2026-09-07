@@ -120,7 +120,7 @@ Two shapes, used consistently: **circle** (the countdown ring and every control 
 - **Shape:** circle (`.buttonBorderShape(.circle)`), `.bordered` style.
 - **Primary (Start/Pause):** `.controlSize(.extraLarge)`, tinted with the active phase color — the visually dominant control, centered between the two secondary ones.
 - **Secondary (Reset, Skip):** `.controlSize(.large)`, default system tint, icon-only (`gobackward`, `forward.end.fill`) with an `.accessibilityLabel` since no visible text names the action.
-- **Quit:** `.plain` button style, `power` SF Symbol, secondary foreground color, positioned top-trailing in the header — the one control that intentionally recedes, since it's a rare, non-primary action.
+- **Quit:** `.plain` button style, `power` SF Symbol, secondary foreground color, positioned top-trailing in the header — the one control that intentionally recedes, since it's a rare, non-primary action. Tapping it swaps the popover to an in-place "Quit Ripe?" confirmation styled to read as a native alert — centered layout, a large tinted SF Symbol, bold title, secondary message, centered Cancel/Quit buttons — rather than a real system `.alert` or `.confirmationDialog`. A `MenuBarExtra(.window)` popover closes itself the instant any separate system window takes key focus, so an actual dialog silently closes the popover out from under itself; this content swap gets the alert's look without spawning a second window.
 
 ### Stats Bar Chart
 - **Shape:** capsule bars, 6pt wide, height scaled 3–24pt proportional to that day's count against the week's max.
@@ -151,3 +151,4 @@ Two shapes, used consistently: **circle** (the countdown ring and every control 
 - **Don't** add a card, panel, or bordered container inside the popover — the popover itself is the only "card" this surface gets.
 - **Don't** use emoji, decorative Unicode glyphs, or stock illustration anywhere in this app.
 - **Don't** open a second window, a second popover, or any Dock-visible surface — there is exactly one popover, with exactly one back-and-forth screen swap inside it.
+- **Don't** present a system `.alert` or `.confirmationDialog` from the popover — either one opens as its own window and focus-steals the `MenuBarExtra(.window)` popover into closing itself. Any confirmation is a content swap inside the popover instead.

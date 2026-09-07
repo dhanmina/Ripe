@@ -5,6 +5,7 @@ struct MenuBarView: View {
     @ObservedObject var engine: PomodoroEngine
     @StateObject private var loginItemManager = LoginItemManager()
     @State private var showingSettings = false
+    @State private var showingQuitConfirmation = false
 
     private var progress: CGFloat {
         CGFloat(engine.remaining / engine.phase.duration)
@@ -12,7 +13,9 @@ struct MenuBarView: View {
 
     var body: some View {
         Group {
-            if showingSettings {
+            if showingQuitConfirmation {
+                quitConfirmContent
+            } else if showingSettings {
                 settingsContent
             } else {
                 timerContent
@@ -21,6 +24,7 @@ struct MenuBarView: View {
         .padding(16)
         .frame(width: 240)
         .animation(.easeInOut(duration: 0.2), value: showingSettings)
+        .animation(.easeInOut(duration: 0.2), value: showingQuitConfirmation)
     }
 
     private var timerContent: some View {
@@ -65,6 +69,38 @@ struct MenuBarView: View {
         .frame(minHeight: 140)
     }
 
+    private var quitConfirmContent: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "power.circle.fill")
+                .font(.system(size: 36))
+                .foregroundStyle(.red)
+
+            Text("Quit Ripe?")
+                .font(.headline)
+
+            Text("Your timer will stop. Today's completed sessions stay saved.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+
+            HStack(spacing: 12) {
+                Button("Cancel") {
+                    showingQuitConfirmation = false
+                }
+                .buttonStyle(.bordered)
+
+                Button("Quit") {
+                    NSApplication.shared.terminate(nil)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.red)
+            }
+            .padding(.top, 4)
+        }
+        .padding(.vertical, 8)
+        .frame(minHeight: 140)
+    }
+
     private var settingsHeader: some View {
         HStack {
             Button {
@@ -101,7 +137,7 @@ struct MenuBarView: View {
             .accessibilityLabel("Settings")
 
             Button {
-                NSApplication.shared.terminate(nil)
+                showingQuitConfirmation = true
             } label: {
                 Image(systemName: "power")
             }
