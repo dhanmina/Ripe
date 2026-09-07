@@ -131,6 +131,10 @@ Two shapes, used consistently: **circle** (the countdown ring and every control 
 - **Icon:** `checkmark.seal.fill`, tinted Complete Green — a semantic system icon for "done," never an emoji.
 - **Layout:** `Label` pairing the icon with the numeric count, left-aligned above the bar chart.
 
+### Settings Toggle
+- **Style:** native `.switch` toggle style, plain text label (subheadline), no icon — matches how System Settings itself labels a binary preference.
+- **Placement:** below the stats section, separated by the same `Divider()` rhythm used elsewhere in the popover, never inside its own container.
+
 ## Do's and Don'ts
 
 ### Do:
