@@ -19,6 +19,7 @@ final class PomodoroEngine: ObservableObject {
     private var endDate: Date?
     private var timer: Timer?
     private var settingsCancellable: AnyCancellable?
+    private var idleObserver: IdleObserver?
     private let statsStore: StatsStore
     private let notificationManager: NotificationManager
     private let settingsStore: SettingsStore
@@ -42,6 +43,10 @@ final class PomodoroEngine: ObservableObject {
             DispatchQueue.main.async {
                 self?.syncDurationIfIdle()
             }
+        }
+
+        idleObserver = IdleObserver { [weak self] in
+            self?.pause()
         }
     }
 

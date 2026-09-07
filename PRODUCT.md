@@ -26,6 +26,7 @@ Used while the Mac is otherwise busy with other apps — the menu bar item and i
 
 - Menu bar only: `LSUIElement = YES`, no Dock icon, no `WindowGroup`.
 - Controls: Start, Pause, Reset, Skip, Quit.
+- Auto-pause on sleep or screen lock: an unambiguous "stepped away" signal, so a running session doesn't silently drain while the Mac is asleep or locked. Deliberately does not attempt keyboard/mouse-idle detection — no-input time isn't a reliable "away" signal for a focus timer (reading, watching a video, or thinking through a problem all look identical to idle).
 - Phase cycle: work → short break, repeating; every Nth work session is followed by a long break instead. Work/short-break/long-break durations and N are user-configurable in Settings (default 25/5/15 min, N=4), persisted in `UserDefaults`.
 - Notification (system banner) fires on every phase completion, including while the app is frontmost (popover open); the accompanying sound is user-selectable in Settings (Default plus a handful of classic system sounds), played via `NSSound` rather than attached to the notification itself.
 - Stats: count of completed focus sessions today, plus a 7-day view, persisted in `UserDefaults` across launches and locale/region changes.
