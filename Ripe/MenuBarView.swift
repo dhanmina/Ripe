@@ -3,12 +3,14 @@ import SwiftUI
 
 struct MenuBarView: View {
     @ObservedObject var engine: PomodoroEngine
+    @ObservedObject var settingsStore: SettingsStore
+    @ObservedObject var notificationManager: NotificationManager
     @StateObject private var loginItemManager = LoginItemManager()
     @State private var showingSettings = false
     @State private var showingQuitConfirmation = false
 
     private var progress: CGFloat {
-        CGFloat(engine.remaining / engine.phase.duration)
+        CGFloat(engine.remaining / engine.phaseDuration)
     }
 
     var body: some View {
@@ -23,8 +25,6 @@ struct MenuBarView: View {
         }
         .padding(16)
         .frame(width: 240)
-        .animation(.easeInOut(duration: 0.2), value: showingSettings)
-        .animation(.easeInOut(duration: 0.2), value: showingQuitConfirmation)
     }
 
     private var timerContent: some View {
@@ -62,9 +62,18 @@ struct MenuBarView: View {
         VStack(alignment: .leading, spacing: 16) {
             settingsHeader
 
-            SettingsView(loginItemManager: loginItemManager)
-
-            Spacer(minLength: 0)
+            ScrollView {
+                SettingsView(
+                    loginItemManager: loginItemManager,
+                    settingsStore: settingsStore,
+                    notificationManager: notificationManager,
+                    engine: engine
+                )
+                .padding(.trailing, 10)
+            }
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+            .frame(maxHeight: 360)
         }
         .frame(minHeight: 140)
     }
@@ -191,5 +200,10 @@ struct MenuBarView: View {
 }
 
 #Preview {
-    MenuBarView(engine: PomodoroEngine())
+    let settingsStore = SettingsStore()
+    MenuBarView(
+        engine: PomodoroEngine(settingsStore: settingsStore),
+        settingsStore: settingsStore,
+        notificationManager: NotificationManager(settingsStore: settingsStore)
+    )
 }

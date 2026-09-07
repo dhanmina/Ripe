@@ -10,21 +10,45 @@ enum PomodoroRunState {
 final class PomodoroEngine: ObservableObject {
     @Published private(set) var phase: PomodoroPhase = .work
     @Published private(set) var runState: PomodoroRunState = .idle
-    @Published private(set) var remaining: TimeInterval = PomodoroPhase.work.duration
+    @Published private(set) var remaining: TimeInterval
+    @Published private(set) var phaseDuration: TimeInterval
     @Published private(set) var sessionsCompleted: Int = 0
     @Published private(set) var statsToday: Int
     @Published private(set) var statsLast7Days: [(date: Date, count: Int)]
 
     private var endDate: Date?
     private var timer: Timer?
+    private var settingsCancellable: AnyCancellable?
     private let statsStore: StatsStore
     private let notificationManager: NotificationManager
+    private let settingsStore: SettingsStore
 
-    init(statsStore: StatsStore = StatsStore(), notificationManager: NotificationManager = NotificationManager()) {
+    init(
+        statsStore: StatsStore = StatsStore(),
+        notificationManager: NotificationManager? = nil,
+        settingsStore: SettingsStore = SettingsStore()
+    ) {
         self.statsStore = statsStore
-        self.notificationManager = notificationManager
+        self.settingsStore = settingsStore
+        self.notificationManager = notificationManager ?? NotificationManager(settingsStore: settingsStore)
         self.statsToday = statsStore.today
         self.statsLast7Days = statsStore.last7Days
+        self.phaseDuration = settingsStore.duration(for: .work)
+        self.remaining = settingsStore.duration(for: .work)
+
+        settingsCancellable = settingsStore.objectWillChange.sink { [weak self] _ in
+            // objectWillChange fires before the new value lands, so read it
+            // on the next runloop tick once the change has actually applied.
+            DispatchQueue.main.async {
+                self?.syncDurationIfIdle()
+            }
+        }
+    }
+
+    private func syncDurationIfIdle() {
+        guard runState == .idle else { return }
+        phaseDuration = settingsStore.duration(for: phase)
+        remaining = phaseDuration
     }
 
     func start() {
@@ -52,7 +76,8 @@ final class PomodoroEngine: ObservableObject {
         timer = nil
         phase = .work
         runState = .idle
-        remaining = phase.duration
+        phaseDuration = settingsStore.duration(for: phase)
+        remaining = phaseDuration
         endDate = nil
     }
 
@@ -85,11 +110,12 @@ final class PomodoroEngine: ObservableObject {
             sessionsCompleted += 1
             statsToday = statsStore.today
             statsLast7Days = statsStore.last7Days
-            phase = sessionsCompleted % 4 == 0 ? .longBreak : .shortBreak
+            phase = sessionsCompleted % settingsStore.sessionsBeforeLongBreak == 0 ? .longBreak : .shortBreak
         } else {
             phase = .work
         }
-        remaining = phase.duration
+        phaseDuration = settingsStore.duration(for: phase)
+        remaining = phaseDuration
         notificationManager.notifyPhaseEnded(finishedPhase: finishedPhase, nextPhase: phase)
     }
 }

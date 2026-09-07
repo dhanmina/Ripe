@@ -26,8 +26,8 @@ Used while the Mac is otherwise busy with other apps — the menu bar item and i
 
 - Menu bar only: `LSUIElement = YES`, no Dock icon, no `WindowGroup`.
 - Controls: Start, Pause, Reset, Skip, Quit.
-- Phase cycle: work (25 min) → short break (5 min), repeating; every 4th work session is followed by a long break (15 min) instead.
-- Notification (system banner) + sound fires on every phase completion, including while the app is frontmost (popover open).
+- Phase cycle: work → short break, repeating; every Nth work session is followed by a long break instead. Work/short-break/long-break durations and N are user-configurable in Settings (default 25/5/15 min, N=4), persisted in `UserDefaults`.
+- Notification (system banner) fires on every phase completion, including while the app is frontmost (popover open); the accompanying sound is user-selectable in Settings (Default plus a handful of classic system sounds), played via `NSSound` rather than attached to the notification itself.
 - Stats: count of completed focus sessions today, plus a 7-day view, persisted in `UserDefaults` across launches and locale/region changes.
 - macOS-only Xcode project (`SUPPORTED_PLATFORMS = macosx`); no unit test target exists by design — verification is `xcodebuild build` plus manual click-through.
 - One surface, one popover: the `MenuBarExtra` popover shows either the timer or a settings screen, swapped in place via a gear button (into settings) and a back button (out of it) — never a second window. Every new preference goes into that settings screen, never bolted onto the timer view.
